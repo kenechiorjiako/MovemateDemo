@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- Regular/Normal font style -->
+    <font
+        android:font="@font/area_normal"
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        app:font="@font/area_normal"
+        app:fontStyle="normal"
+        app:fontWeight="400" />
+
+    <!-- Regular/Normal Italic font style -->
+    <font
+        android:font="@font/area_regular_italic"
+        android:fontStyle="italic"
+        android:fontWeight="400"
+        app:font="@font/area_regular_italic"
+        app:fontStyle="italic"
+        app:fontWeight="400" />
+
+    <!-- Thin font style -->
+    <font
+        android:font="@font/area_thin"
+        android:fontStyle="normal"
+        android:fontWeight="100"
+        app:font="@font/area_thin"
+        app:fontStyle="normal"
+        app:fontWeight="100" />
+
+    <!-- Thin Italic font style -->
+    <font
+        android:font="@font/area_thin_italic"
+        android:fontStyle="italic"
+        android:fontWeight="100"
+        app:font="@font/area_thin_italic"
+        app:fontStyle="italic"
+        app:fontWeight="100" />
+
+    <!-- SemiBold font style -->
+    <font
+        android:font="@font/area_semibold"
+        android:fontStyle="normal"
+        android:fontWeight="600"
+        app:font="@font/area_semibold"
+        app:fontStyle="normal"
+        app:fontWeight="600" />
+
+    <!-- SemiBold Italic font style -->
+    <font
+        android:font="@font/area_semibold_italic"
+        android:fontStyle="italic"
+        android:fontWeight="600"
+        app:font="@font/area_semibold_italic"
+        app:fontStyle="italic"
+        app:fontWeight="600" />
+
+    <!-- Bold font style -->
+    <font
+        android:font="@font/area_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700"
+        app:font="@font/area_bold"
+        app:fontStyle="normal"
+        app:fontWeight="700" />
+
+    <!-- Bold Italic font style -->
+    <font
+        android:font="@font/area_bold_italic"
+        android:fontStyle="italic"
+        android:fontWeight="700"
+        app:font="@font/area_bold_italic"
+        app:fontStyle="italic"
+        app:fontWeight="700" />
+
+    <!-- Extra Bold font style -->
+    <font
+        android:font="@font/area_extra_bold"
+        android:fontStyle="normal"
+        android:fontWeight="800"
+        app:font="@font/area_extra_bold"
+        app:fontStyle="normal"
+        app:fontWeight="800" />
+
+    <!-- Extra Bold Italic font style -->
+    <font
+        android:font="@font/area_extra_bold_italic"
+        android:fontStyle="italic"
+        android:fontWeight="800"
+        app:font="@font/area_extra_bold_italic"
+        app:fontStyle="italic"
+        app:fontWeight="800" />
+
+    <!-- Black font style -->
+    <font
+        android:font="@font/area_black"
+        android:fontStyle="normal"
+        android:fontWeight="900"
+        app:font="@font/area_black"
+        app:fontStyle="normal"
+        app:fontWeight="900" />
+
+    <!-- Black Italic font style -->
+    <font
+        android:font="@font/area_black_italic"
+        android:fontStyle="italic"
+        android:fontWeight="900"
+        app:font="@font/area_black_italic"
+        app:fontStyle="italic"
+        app:fontWeight="900" />
+</font-family> 
