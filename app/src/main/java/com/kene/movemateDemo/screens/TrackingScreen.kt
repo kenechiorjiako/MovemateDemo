@@ -1,11 +1,9 @@
 package com.kene.movemateDemo.screens
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,16 +13,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,41 +32,34 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kene.movemateDemo.R
-import com.kene.movemateDemo.components.DividerCard
-import com.kene.movemateDemo.components.MoveMateHeader
-import com.kene.movemateDemo.components.SearchBar
 import com.kene.movemateDemo.models.Shipment
 import com.kene.movemateDemo.models.VehicleType
-import com.kene.movemateDemo.ui.theme.BackgroundGrey
-import com.kene.movemateDemo.ui.theme.BackgroundWhite
 import com.kene.movemateDemo.ui.theme.DividerColor
 import com.kene.movemateDemo.ui.theme.PrimaryOrange
 import com.kene.movemateDemo.ui.theme.PrimaryPurple
 import com.kene.movemateDemo.ui.theme.TextSecondary
 import com.kene.movemateDemo.utils.DummyData
+import kotlinx.coroutines.delay
 
 @Composable
 fun TrackingScreen(
@@ -97,7 +89,7 @@ fun TrackingScreen(
         )
     } else {
         // Regular tracking screen content
-        mainContent()
+        MainContent()
     }
 }
 
@@ -106,9 +98,28 @@ fun SearchResultsLayout(
     searchQuery: String,
     filteredShipments: List<Shipment>
 ) {
-    Box(Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
+    val slideInAnimation = remember {
+            Animatable(initialValue = 100f)
+        }
+        
+        LaunchedEffect(Unit) {
+            slideInAnimation.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+
+    Box(Modifier.padding(horizontal = 16.dp, vertical = 16.dp).animateContentSize()) {
+        
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+                .offset(y = slideInAnimation.value.dp)
+                .alpha(1f - (slideInAnimation.value / 100f).coerceIn(0f, 1f)),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White,
             ),
@@ -120,7 +131,8 @@ fun SearchResultsLayout(
             LazyColumn(
                 modifier = Modifier
                     .background(Color.White)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .animateContentSize(),
             ) {
                 if (filteredShipments.isEmpty()) {
                     // No results found
@@ -134,7 +146,8 @@ fun SearchResultsLayout(
                             Text(
                                 text = "No shipments found for \"$searchQuery\"",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                                color = TextSecondary,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
@@ -142,7 +155,6 @@ fun SearchResultsLayout(
                     // Search results
                     items(filteredShipments) { shipment ->
                         ShipmentSearchResultItem(shipment = shipment)
-                        // Add divider between items, but not after the last item
                         if (shipment != filteredShipments.last()) {
                             HorizontalDivider(
                                 color = DividerColor,
@@ -204,7 +216,19 @@ fun ShipmentSearchResultItem(shipment: Shipment) {
 }
 
 @Composable
-fun mainContent() {
+fun MainContent() {
+    val animatedOffset = remember { Animatable(initialValue = 0f) }
+
+    LaunchedEffect(key1 = true) {
+        animatedOffset.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(
+                durationMillis = 500,
+                easing = FastOutSlowInEasing
+            )
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -218,13 +242,20 @@ fun mainContent() {
             modifier = Modifier
                 .padding(bottom = 16.dp, top = 8.dp)
                 .padding(horizontal = 16.dp)
+                .offset(x = animatedOffset.value.dp)
         )
         
         // Shipment details card
-        ShipmentDetailsCard(
-            shipment = DummyData.shipments[0],
-            onAddStopClick = { /* Handle add stop */ }
-        )
+
+        
+        Box(
+            modifier = Modifier.offset(x = animatedOffset.value.dp)
+        ) {
+            ShipmentDetailsCard(
+                shipment = DummyData.shipments[0],
+                onAddStopClick = { /* Handle add stop */ }
+            )
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
         
@@ -235,6 +266,7 @@ fun mainContent() {
             modifier = Modifier
                 .padding(bottom = 16.dp)
                 .padding(horizontal = 16.dp)
+                .offset(x = animatedOffset.value.dp)
         )
         
         // Vehicle types
@@ -242,8 +274,25 @@ fun mainContent() {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
-            items(DummyData.vehicleTypes) { vehicleType ->
-                VehicleTypeCard(vehicleType = vehicleType)
+            itemsIndexed(DummyData.vehicleTypes) { index, vehicleType ->
+                val animatedOffset = remember { Animatable(initialValue = 100f) }
+                
+                LaunchedEffect(key1 = true) {
+                    delay(50L * index.coerceAtMost(1))
+                    animatedOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = FastOutSlowInEasing
+                        )
+                    )
+                }
+                
+                Box(
+                    modifier = Modifier.offset(x = animatedOffset.value.dp)
+                ) {
+                    VehicleTypeCard(vehicleType = vehicleType)
+                }
             }
         }
     }

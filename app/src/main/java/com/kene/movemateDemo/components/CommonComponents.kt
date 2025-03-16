@@ -330,7 +330,8 @@ fun SearchBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp),
+            .padding(bottom = 12.dp)
+            .animateContentSize(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Back button - only visible when search is focused
@@ -345,7 +346,8 @@ fun SearchBar(
                     onBackClick()
                     focusManager.clearFocus()
                     onQueryChange("")
-                }
+                },
+                modifier = Modifier.animateContentSize()
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.back),
@@ -374,7 +376,9 @@ fun SearchBar(
                 .clip(RoundedCornerShape(50.dp))
                 .focusRequester(focusRequester)
                 .onFocusChanged { state ->
-                    onFocusChanged(state.isFocused)
+                    if (state.isFocused) {
+                        onFocusChanged(state.isFocused)
+                    }
                 }
                 .animateContentSize(),
             placeholder = {

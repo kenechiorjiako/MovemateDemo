@@ -93,7 +93,6 @@ fun CalculateScreen(
         
         // Categories section
         CategoriesSection(
-            categories = DummyData.shipmentCategories
         )
         
         // Calculate button
@@ -358,7 +357,6 @@ fun PackagingOption(
 
 @Composable
 fun CategoriesSection(
-    categories: List<ShipmentCategory>
 ) {
     var selectedCategory by remember { mutableStateOf("") }
     

@@ -1,6 +1,8 @@
 package com.kene.movemateDemo.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -15,11 +17,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -28,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +57,7 @@ import com.kene.movemateDemo.ui.theme.PrimaryPurple
 import com.kene.movemateDemo.ui.theme.TextSecondary
 import com.kene.movemateDemo.ui.theme.TextTertiary
 import com.kene.movemateDemo.utils.DummyData
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -81,6 +87,17 @@ fun ShipmentHistoryScreen() {
         }
     }
     
+    val headerAnimated = remember { mutableStateOf(false) }
+    val animatedOffset = remember { Animatable(initialValue = 100f) }
+    // Keep track of which items have been animated
+    val animatedItems = remember { mutableStateOf(mutableSetOf<Int>()) }
+    
+    // Reset animations when tab changes
+    LaunchedEffect(selectedTabIndex) {
+        headerAnimated.value = false
+        animatedItems.value.clear()
+    }
+    
     Box(modifier = Modifier.fillMaxSize()) {
         // Make the entire content scrollable
         LazyColumn(
@@ -91,22 +108,57 @@ fun ShipmentHistoryScreen() {
         ) {
             // Header
             item {
+                LaunchedEffect(key1 = true, key2 = selectedTabIndex) {
+                    if (!headerAnimated.value) {
+                        animatedOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(
+                                durationMillis = 500,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                        headerAnimated.value = true
+                    }
+                }
+                
                 Text(
                     text = "Shipments",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    modifier = Modifier.padding(bottom = 8.dp, top = 24.dp)
+                    modifier = Modifier
+                        .padding(bottom = 8.dp, top = 24.dp)
+                        .offset(y = animatedOffset.value.dp)
+                        .alpha(1f - (animatedOffset.value / 100f).coerceIn(0f, 1f))
                 )
             }
 
             // Empty state
             if (filteredShipments.isEmpty()) {
                 item {
+                    val emptyStateAnimated = remember { mutableStateOf(false) }
+                    val animatedOffset = remember { Animatable(initialValue = 100f) }
+                    
+                    LaunchedEffect(key1 = true, key2 = selectedTabIndex) {
+                        if (!emptyStateAnimated.value) {
+                            delay(100)
+                            animatedOffset.animateTo(
+                                targetValue = 0f,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = FastOutSlowInEasing
+                                )
+                            )
+                            emptyStateAnimated.value = true
+                        }
+                    }
+                    
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 32.dp),
+                            .padding(vertical = 32.dp)
+                            .offset(y = animatedOffset.value.dp)
+                            .alpha(1f - (animatedOffset.value / 100f).coerceIn(0f, 1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -119,14 +171,28 @@ fun ShipmentHistoryScreen() {
             } 
             // Shipment items
             else {
-                items(filteredShipments) { shipment ->
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = fadeIn(animationSpec = tween(durationMillis = 300)) +
-                                slideInVertically(
-                                    animationSpec = tween(durationMillis = 300),
-                                    initialOffsetY = { it / 2 }
+                itemsIndexed(filteredShipments) { index, shipment ->
+                    val hasBeenAnimated = index in animatedItems.value
+                    val animatedOffset = remember { Animatable(initialValue = if (hasBeenAnimated) 0f else 100f) }
+                    
+                    LaunchedEffect(key1 = true, key2 = selectedTabIndex) {
+                        if (!hasBeenAnimated) {
+                            delay(100L * index.coerceAtMost(3))
+                            animatedOffset.animateTo(
+                                targetValue = 0f,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = FastOutSlowInEasing
                                 )
+                            )
+                            animatedItems.value.add(index)
+                        }
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .offset(y = animatedOffset.value.dp)
+                            .alpha(1f - (animatedOffset.value / 100f).coerceIn(0f, 1f))
                     ) {
                         ShipmentHistoryItem(shipment = shipment)
                     }
