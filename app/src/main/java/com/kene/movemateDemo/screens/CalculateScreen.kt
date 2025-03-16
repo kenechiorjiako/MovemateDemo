@@ -3,13 +3,14 @@ package com.kene.movemateDemo.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutQuart
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,15 +22,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,8 +36,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,6 +43,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,22 +60,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kene.movemateDemo.R
 import com.kene.movemateDemo.components.OrangeButton
-import com.kene.movemateDemo.models.ShipmentCategory
 import com.kene.movemateDemo.ui.theme.BackgroundGrey
 import com.kene.movemateDemo.ui.theme.BackgroundWhite
-import com.kene.movemateDemo.ui.theme.PrimaryOrange
 import com.kene.movemateDemo.ui.theme.PrimaryPurple
 import com.kene.movemateDemo.ui.theme.TextSecondary
 import com.kene.movemateDemo.ui.theme.TextTertiary
-import com.kene.movemateDemo.utils.DummyData
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.times
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun CalculateScreen(
     onCalculateClick: () -> Unit
 ) {
+
+    val sectionOffsets = List(4) { remember { Animatable(initialValue = 100f) } }
+
+    LaunchedEffect(key1 = true) {
+        sectionOffsets.forEachIndexed { index, animatable ->
+            launch {
+                delay(100L * index)
+                animatable.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(
+                        durationMillis = 500,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,22 +101,39 @@ fun CalculateScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Destination section
-        DestinationSection()
+        AnimatedSection(offset = sectionOffsets[0].value) {
+            DestinationSection()
+        }
         
-        // Packaging section
-        PackagingSection()
+        AnimatedSection(offset = sectionOffsets[1].value) {
+            PackagingSection()
+        }
         
-        // Categories section
-        CategoriesSection(
-        )
+        AnimatedSection(offset = sectionOffsets[2].value) {
+            CategoriesSection()
+        }
         
-        // Calculate button
-        OrangeButton(
-            text = "Calculate",
-            onClick = onCalculateClick,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
+        AnimatedSection(offset = sectionOffsets[3].value) {
+            OrangeButton(
+                text = "Calculate",
+                onClick = onCalculateClick,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AnimatedSection(
+    offset: Float,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .offset(y = offset.dp)
+            .alpha(1f - (offset / 100f).coerceIn(0f, 1f))
+    ) {
+        content()
     }
 }
 
@@ -127,7 +160,6 @@ fun DestinationSection() {
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Sender location input
                 LocationInputField(
                     icon = {
                         Icon(
@@ -140,8 +172,6 @@ fun DestinationSection() {
                     placeholder = "Sender location",
                 )
 
-                
-                // Receiver location input
                 LocationInputField(
                     icon = {
                         Icon(
@@ -156,7 +186,6 @@ fun DestinationSection() {
                     placeholder = "Receiver location",
                 )
 
-                // Approx weight input
                 LocationInputField(
                     icon = {
                         Icon(
@@ -178,7 +207,6 @@ private fun LocationInputField(
     icon: @Composable () -> Unit,
     placeholder: String,
 ) {
-    // Search field
     val inputText = remember { mutableStateOf("") }
     TextField(
         value = inputText.value,
@@ -220,22 +248,20 @@ private fun LocationInputField(
 @Composable
 fun PackagingSection() {
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Title
+
         Text(
             text = "Packaging",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 4.dp, top = 12.dp)
         )
-        
-        // Subtitle
+
         Text(
             text = "What are you sending?",
             style = MaterialTheme.typography.bodyMedium,
             color = TextSecondary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
-        
-        // Packaging selection card
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -253,11 +279,11 @@ fun PackagingSection() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Left side with icon and text
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Box icon
+
                     Image(
                         painter = painterResource(id = R.drawable.box_package),
                         contentDescription = "Package",
@@ -269,15 +295,13 @@ fun PackagingSection() {
                         modifier = Modifier.height(28.dp).padding(horizontal = 12.dp),
                         color = TextTertiary.copy(alpha = 0.4f)
                     )
-                    
-                    // Text
+
                     Text(
                         text = "Box",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                 }
-                
-                // Dropdown arrow - using KeyboardArrowDown from Icons.Default
+
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = "Dropdown",
@@ -290,107 +314,38 @@ fun PackagingSection() {
 }
 
 @Composable
-fun PackagingOption(
-    title: String,
-    description: String,
-    isSelected: Boolean
-) {
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1f else 0.8f,
-        label = "scale"
-    )
-    
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .border(
-                width = 1.dp,
-                color = if (isSelected) PrimaryOrange else Color.LightGray,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .background(if (isSelected) PrimaryOrange.copy(alpha = 0.05f) else Color.Transparent)
-            .clickable { /* Handle selection */ }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Checkbox
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(if (isSelected) PrimaryOrange else Color.LightGray.copy(alpha = 0.3f))
-                .padding(2.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(14.dp)
-                        .scale(scale)
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.size(12.dp))
-        
-        // Text content
-        Column {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-            
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
-            )
-        }
-    }
-}
-
-@Composable
 fun CategoriesSection(
 ) {
     var selectedCategory by remember { mutableStateOf("") }
-    
-    // List of all category names with their relative sizes
+
     val categoryItems = listOf(
-        CategoryItem("Documents", 1.2f),
-        CategoryItem("Glass", 0.8f),
-        CategoryItem("Liquid", 0.8f),
-        CategoryItem("Food", 0.8f),
-        CategoryItem("Electronic", 1.2f),
-        CategoryItem("Product", 1.0f),
-        CategoryItem("Others", 1.0f)
+        CategoryItem("Documents"),
+        CategoryItem("Glass"),
+        CategoryItem("Liquid"),
+        CategoryItem("Food"),
+        CategoryItem("Electronic"),
+        CategoryItem("Product"),
+        CategoryItem("Others")
     )
     
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Title
+
         Text(
             text = "Categories",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 4.dp, top = 12.dp)
         )
         
-        // Subtitle
+
         Text(
             text = "What are you sending?",
             style = MaterialTheme.typography.bodyMedium,
             color = TextSecondary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
-        
-        // Categories in a flow layout
+
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             maxItemsInEachRow = 4
         ) {
@@ -405,14 +360,12 @@ fun CategoriesSection(
     }
 }
 
-// Simple data class to hold category information
-data class CategoryItem(val name: String, val weight: Float)
+data class CategoryItem(val name: String)
 
 // Custom FlowRow implementation
 @Composable
 fun FlowRow(
     modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     maxItemsInEachRow: Int = Int.MAX_VALUE,
     content: @Composable () -> Unit
@@ -446,12 +399,12 @@ fun FlowRow(
         if (currentRow.isNotEmpty()) {
             rows.add(currentRow)
         }
-        
+
         // Calculate layout height
         val rowGapInPx = verticalArrangement.spacing.roundToPx()
         val rowHeights = rows.map { row -> row.maxOf { it.height } }
         val layoutHeight = rowHeights.sum() + (rows.size - 1) * rowGapInPx
-        
+
         // Set layout size
         layout(constraints.maxWidth, layoutHeight) {
             var yPosition = 0
@@ -546,6 +499,18 @@ fun ConfirmationScreen(
     amount: Double = 1460.0,
     onBackToHomeClick: () -> Unit
 ) {
+    val packageAnimation = remember { Animatable(0f) }
+                
+    LaunchedEffect(Unit) {
+        packageAnimation.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 1000,
+                easing = EaseOutQuart
+            )
+        )
+    }
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -564,30 +529,45 @@ fun ConfirmationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Logo
+
                 Image(
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = "logo",
-                    modifier = Modifier.fillMaxWidth(0.6f).aspectRatio(227/39f)
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .aspectRatio(227/39f)
+                        .alpha(animateFloatAsState(
+                            targetValue = if (packageAnimation.value >= 0.5f) 1f else 0f,
+                            animationSpec = tween(durationMillis = 400)
+                        ).value)
                 )
                 
                 Spacer(modifier = Modifier.height(52.dp))
                 
-                // Package icon (simplified)
+
                 Image(
                     painter = painterResource(id = R.drawable.box_package),
                     contentDescription = "Package",
-                    modifier = Modifier.size(120.dp).alpha(0.8f)
+                    modifier = Modifier
+                        .size(132.dp)
+                        .alpha(0.8f)
+                        .scale(packageAnimation.value)
+                        .offset(y = (1f - packageAnimation.value) * 50.dp)
                 )
                 
                 Spacer(modifier = Modifier.height(36.dp))
                 
-                // Total amount
+
                 Text(
                     text = "Total Estimated Amount",
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
-                    color = Color.Black
+                    color = Color.Black,
+                    modifier = Modifier
+                        .alpha(animateFloatAsState(
+                            targetValue = if (packageAnimation.value >= 0.7f) 1f else 0f,
+                            animationSpec = tween(durationMillis = 400)
+                        ).value)
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -596,7 +576,12 @@ fun ConfirmationScreen(
                     text = "$${amount.toInt()} USD",
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = Color(0xFF4CAF50),
-                    )
+                    ),
+                    modifier = Modifier
+                        .alpha(animateFloatAsState(
+                            targetValue = if (packageAnimation.value >= 0.75f) 1f else 0f,
+                            animationSpec = tween(durationMillis = 400)
+                        ).value)
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -605,15 +590,25 @@ fun ConfirmationScreen(
                     text = "This amount is estimated this will vary\nif you change your location or weight",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .alpha(animateFloatAsState(
+                            targetValue = if (packageAnimation.value >= 0.8f) 1f else 0f,
+                            animationSpec = tween(durationMillis = 400)
+                        ).value)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Back to home button
+
                 OrangeButton(
                     text = "Back to home",
-                    onClick = onBackToHomeClick
+                    onClick = onBackToHomeClick,
+                    modifier = Modifier
+                        .alpha(animateFloatAsState(
+                            targetValue = if (packageAnimation.value >= 0.85f) 1f else 0f,
+                            animationSpec = tween(durationMillis = 400)
+                        ).value)
                 )
             }
         }

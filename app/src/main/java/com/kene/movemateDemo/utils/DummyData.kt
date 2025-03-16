@@ -1,7 +1,6 @@
 package com.kene.movemateDemo.utils
 
 import com.kene.movemateDemo.models.Shipment
-import com.kene.movemateDemo.models.ShipmentCategory
 import com.kene.movemateDemo.models.ShipmentStatus
 import com.kene.movemateDemo.models.VehicleType
 
@@ -138,59 +137,6 @@ object DummyData {
         )
     )
     
-    // Dummy shipments for the search history screen
-    val searchHistory = listOf(
-        Shipment(
-            id = "1",
-            trackingNumber = "NE4385734085790",
-            name = "Macbook pro M2",
-            from = "Paris",
-            to = "Morocco",
-            status = ShipmentStatus.IN_PROGRESS
-        ),
-        Shipment(
-            id = "2",
-            trackingNumber = "NEJ20089934122231",
-            name = "Summer linen jacket",
-            from = "Barcelona",
-            to = "Paris",
-            status = ShipmentStatus.PENDING
-        ),
-        Shipment(
-            id = "3",
-            trackingNumber = "NEJ3587026497865",
-            name = "Tapered-fit jeans AW",
-            from = "Colombia",
-            to = "Paris",
-            status = ShipmentStatus.COMPLETED
-        ),
-        Shipment(
-            id = "4",
-            trackingNumber = "NEJ3587026497865",
-            name = "Slim fit jeans AW",
-            from = "Bogota",
-            to = "Dhaka",
-            status = ShipmentStatus.IN_PROGRESS
-        ),
-        Shipment(
-            id = "5",
-            trackingNumber = "NEJ2348157075496",
-            name = "Office setup desk",
-            from = "France",
-            to = "German",
-            status = ShipmentStatus.PENDING
-        )
-    )
-    
-    // Recent searches for the search functionality
-    val recentSearches = listOf(
-        "NE4385734085790",
-        "NEJ20089934122231",
-        "NEJ3587026497865",
-        "NEJ2348157075496",
-        "Macbook pro M2"
-    )
-    
     // Dummy vehicle types
     val vehicleTypes = listOf(
         VehicleType(
@@ -209,15 +155,5 @@ object DummyData {
             iconResId = 0
         )
     )
-    
-    // Dummy shipment categories
-    val shipmentCategories = listOf(
-        ShipmentCategory("Documents"),
-        ShipmentCategory("Glass"),
-        ShipmentCategory("Liquid"),
-        ShipmentCategory("Food"),
-        ShipmentCategory("Electronic", true),
-        ShipmentCategory("Product"),
-        ShipmentCategory("Others")
-    )
+
 } 

@@ -1,14 +1,11 @@
 package com.kene.movemateDemo.screens
 
-import androidx.compose.animation.AnimatedVisibility
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,12 +43,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kene.movemateDemo.R
-import com.kene.movemateDemo.components.StatusIndicator
 import com.kene.movemateDemo.models.Shipment
 import com.kene.movemateDemo.models.ShipmentStatus
 import com.kene.movemateDemo.ui.theme.BackgroundGrey
 import com.kene.movemateDemo.ui.theme.BackgroundWhite
-import com.kene.movemateDemo.ui.theme.DividerColor
 import com.kene.movemateDemo.ui.theme.PrimaryPurple
 import com.kene.movemateDemo.ui.theme.TextSecondary
 import com.kene.movemateDemo.ui.theme.TextTertiary
@@ -61,7 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-// Create a singleton object to manage the selected tab state
+// A singleton object to manage the selected tab state
 object ShipmentHistoryState {
     private val _selectedTabIndex = MutableStateFlow(0)
     val selectedTabIndex: StateFlow<Int> = _selectedTabIndex
@@ -73,16 +67,15 @@ object ShipmentHistoryState {
 
 @Composable
 fun ShipmentHistoryScreen() {
-    // Get the current selected tab
     val selectedTabIndex by ShipmentHistoryState.selectedTabIndex.collectAsState()
     
-    // Filter shipments based on selected tab
+
     val filteredShipments = remember(selectedTabIndex) {
         when (selectedTabIndex) {
-            0 -> DummyData.shipments // All
-            1 -> DummyData.shipments.filter { it.status == ShipmentStatus.COMPLETED } // Completed
-            2 -> DummyData.shipments.filter { it.status == ShipmentStatus.IN_PROGRESS } // In progress
-            3 -> DummyData.shipments.filter { it.status == ShipmentStatus.PENDING || it.status == ShipmentStatus.LOADING } // Pending
+            0 -> DummyData.shipments
+            1 -> DummyData.shipments.filter { it.status == ShipmentStatus.COMPLETED }
+            2 -> DummyData.shipments.filter { it.status == ShipmentStatus.IN_PROGRESS }
+            3 -> DummyData.shipments.filter { it.status == ShipmentStatus.PENDING || it.status == ShipmentStatus.LOADING }
             else -> DummyData.shipments
         }
     }
@@ -91,22 +84,20 @@ fun ShipmentHistoryScreen() {
     val animatedOffset = remember { Animatable(initialValue = 100f) }
     // Keep track of which items have been animated
     val animatedItems = remember { mutableStateOf(mutableSetOf<Int>()) }
-    
-    // Reset animations when tab changes
+
     LaunchedEffect(selectedTabIndex) {
         headerAnimated.value = false
         animatedItems.value.clear()
     }
     
     Box(modifier = Modifier.fillMaxSize()) {
-        // Make the entire content scrollable
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header
+
             item {
                 LaunchedEffect(key1 = true, key2 = selectedTabIndex) {
                     if (!headerAnimated.value) {
@@ -133,7 +124,7 @@ fun ShipmentHistoryScreen() {
                 )
             }
 
-            // Empty state
+
             if (filteredShipments.isEmpty()) {
                 item {
                     val emptyStateAnimated = remember { mutableStateOf(false) }
@@ -169,7 +160,8 @@ fun ShipmentHistoryScreen() {
                     }
                 }
             } 
-            // Shipment items
+
+
             else {
                 itemsIndexed(filteredShipments) { index, shipment ->
                     val hasBeenAnimated = index in animatedItems.value
@@ -199,9 +191,9 @@ fun ShipmentHistoryScreen() {
                 }
             }
             
-            // Add some bottom padding
+
             item {
-                Spacer(modifier = Modifier.height(80.dp)) // Increased height to account for gradient overlay
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
         
@@ -250,7 +242,7 @@ fun ShipmentHistoryItem(shipment: Shipment) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left column with text content
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -264,7 +256,7 @@ fun ShipmentHistoryItem(shipment: Shipment) {
                         .background(BackgroundGrey)
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    // Status icon
+
                     Icon(
                         painter = painterResource(id = statusIcon),
                         contentDescription = shipment.status.label,
@@ -274,7 +266,7 @@ fun ShipmentHistoryItem(shipment: Shipment) {
                     
                     Spacer(modifier = Modifier.width(4.dp))
                     
-                    // Status text
+
                     Text(
                         text = shipment.status.label.lowercase(),
                         style = MaterialTheme.typography.labelMedium,
@@ -284,7 +276,7 @@ fun ShipmentHistoryItem(shipment: Shipment) {
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // Shipment title
+
                 Text(
                     text = shipment.name ?: "Arriving today!",
                     style = MaterialTheme.typography.titleMedium.copy(
@@ -340,7 +332,7 @@ fun ShipmentHistoryItem(shipment: Shipment) {
                 }
             }
             
-            // Right side with package image
+
             Box(
                 modifier = Modifier
                     .size(80.dp),

@@ -1,6 +1,5 @@
 package com.kene.movemateDemo.components
 
-import android.view.MotionEvent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -14,14 +13,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -38,13 +34,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -55,7 +45,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -72,13 +61,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -91,7 +78,6 @@ import com.kene.movemateDemo.screens.ShipmentHistoryState
 import com.kene.movemateDemo.ui.theme.BackgroundWhite
 import com.kene.movemateDemo.ui.theme.PrimaryOrange
 import com.kene.movemateDemo.ui.theme.PrimaryPurple
-import com.kene.movemateDemo.ui.theme.Purple80
 import com.kene.movemateDemo.ui.theme.TextSecondary
 import com.kene.movemateDemo.utils.DummyData
 
@@ -100,25 +86,21 @@ import com.kene.movemateDemo.utils.DummyData
  */
 @Composable
 fun MoveMateHeader(
-    title: String,
     currentScreen: AppScreen,
     statusBarHeight: Dp = Dp(0f),
     onBackClick: () -> Unit = {},
-    onNotificationClick: () -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
     isSearchFocused: Boolean = false,
     onSearchFocusChange: (Boolean) -> Unit = {}
 ) {
-    // State to track if search is focused
     var isSearchFocusedInternal by remember { mutableStateOf(isSearchFocused) }
-    
-    // Update external state when internal state changes
+
     if (isSearchFocusedInternal != isSearchFocused) {
         onSearchFocusChange(isSearchFocusedInternal)
     }
 
-    val headerColor by animateColorAsState(
+    val statusBarColor by animateColorAsState(
         targetValue = if (currentScreen == AppScreen.Confirmation) BackgroundWhite else PrimaryPurple,
         animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
         label = "headerColorAnimation"
@@ -134,145 +116,155 @@ fun MoveMateHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(statusBarHeight)
-                .background(headerColor)
+                .background(statusBarColor)
         )
 
         AnimatedContent(
-            targetState = title,
+            targetState = currentScreen,
             transitionSpec = {
                 fadeIn(animationSpec = tween(300)) togetherWith
                         fadeOut(animationSpec = tween(300))
-            }
-        ) { headerTitle -> 
-            when (headerTitle) {
-                "Tracking" -> {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                    AnimatedVisibility(
-                    visible = !isSearchFocusedInternal,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                   ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Profile picture and location
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Profile picture
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.LightGray),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    // Placeholder for profile image
-                                    Image(
-                                        painter = painterResource(id = R.drawable.profile),
-                                        contentDescription = "Profile",
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                // Location information
-                                Column {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.navigationarrow),
-                                            contentDescription = "Location",
-                                            tint = Color.White.copy(alpha = 0.7f),
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .rotate(90f)
-                                        )
-
-                                        Spacer(modifier = Modifier.width(4.dp))
-
-                                        Text(
-                                            text = "Your location",
-                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                color = Color.White.copy(alpha = 0.7f)
-                                            )
-                                        )
-                                    }
-
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    ) {
-                                        Text(
-                                            text = "Wertheimer, Illinois",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                color = Color.White.copy(alpha = 0.9f)
-                                            )
-                                        )
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = "Change location",
-                                            tint = Color.White,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Notification bell
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White)
-                                    .clickable { onNotificationClick() },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Notifications,
-                                    contentDescription = "Notifications",
-                                    tint = Color.Black
-                                )
-                            }
-                        }
-                    }
-
-                    SearchBar(
-                        hint = "Enter the receipt number...",
-                        onSearch = {},
-                        onScanClick = {},
-                        onBackClick = {
-                            isSearchFocusedInternal = false
-                        },
+            }, label = "header_content"
+        ) { currentScreen -> 
+            when (currentScreen) {
+                AppScreen.Tracking -> {
+                    HomeHeader(
                         isSearchFocused = isSearchFocusedInternal,
-                        onFocusChanged = { focused ->
-                            isSearchFocusedInternal = focused
-                            onSearchFocusChange(focused)
-                        },
+                        onBackClick = { isSearchFocusedInternal = false },
+                        onFocusChanged = { isSearchFocusedInternal = it },
                         query = searchQuery,
-                        onQueryChange = onSearchQueryChange
+                        onQueryChanged = onSearchQueryChange
                     )
                 }
-                }
-                "Shipment history" -> {
+                AppScreen.ShipmentHistory -> {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         DefaultHeader(onBackClick = onBackClick, title = "Shipment history")
                         ShipmentHistoryHeaderTabs()
                     }
                 }
-                "Calculate" -> {
+                AppScreen.Calculate -> {
                     DefaultHeader(onBackClick = onBackClick, title = "Calculate")
                 }
                 else -> {}
             }
         }
             
+    }
+}
+
+@Composable
+fun HomeHeader(
+    isSearchFocused: Boolean,
+    onBackClick: () -> Unit,
+    onFocusChanged: (Boolean) -> Unit,
+    query: String,
+    onQueryChanged: (String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        AnimatedVisibility(
+            visible = !isSearchFocused,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Profile picture and location
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.LightGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Profile image
+                        Image(
+                            painter = painterResource(id = R.drawable.profile),
+                            contentDescription = "Profile",
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Location information
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.navigationarrow),
+                                contentDescription = "Location",
+                                tint = Color.White.copy(alpha = 0.7f),
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .rotate(90f)
+                            )
+
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            Text(
+                                text = "Your location",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color.White.copy(alpha = 0.7f)
+                                )
+                            )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
+                            Text(
+                                text = "Wertheimer, Illinois",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Change location",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Notification bell
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Notifications",
+                        tint = Color.Black
+                    )
+                }
+            }
+        }
+
+        SearchBar(
+            hint = "Enter the receipt number...",
+            onSearch = {},
+            onScanClick = {},
+            onBackClick = onBackClick,
+            isSearchFocused = isSearchFocused,
+            onFocusChanged = onFocusChanged,
+            query = query,
+            onQueryChange = onQueryChanged
+        )
     }
 }
 
@@ -305,7 +297,6 @@ fun DefaultHeader(onBackClick: () -> Unit, title: String) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Empty spacer to balance the back button
         Spacer(modifier = Modifier.width(48.dp))
     }
 }
@@ -385,7 +376,7 @@ fun SearchBar(
                 Text(
                     text = hint,
                     color = TextSecondary,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.labelMedium
                 )
             },
             leadingIcon = {
@@ -430,37 +421,10 @@ fun SearchBar(
     }
 }
 
-/**
- * Status indicator component
- */
-@Composable
-fun StatusIndicator(status: ShipmentStatus) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(RoundedCornerShape(50.dp))
-            .background(status.color.copy(alpha = 0.1f))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(status.color)
-        )
-        Spacer(modifier = Modifier.size(4.dp))
-        Text(
-            text = status.label,
-            style = MaterialTheme.typography.labelSmall,
-            color = status.color
-        )
-    }
-}
 
 /**
  * Orange button component
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun OrangeButton(
     text: String,
@@ -520,66 +484,6 @@ fun AnimatedBottomNavigation(
     }
 }
 
-/**
- * Card with divider
- */
-@Composable
-fun DividerCard(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = BackgroundWhite
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        ),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            content()
-        }
-    }
-}
-
-/**
- * Dropdown field
- */
-@Composable
-fun DropdownField(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFF5F5F5))
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
-        )
-        
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowDown,
-            contentDescription = "Dropdown",
-            tint = TextSecondary,
-            modifier = Modifier.size(20.dp)
-        )
-    }
-}
 
 /**
  * Tabs for shipment history header
@@ -587,8 +491,7 @@ fun DropdownField(
 @Composable
 fun ShipmentHistoryHeaderTabs() {
     val selectedTabIndex by ShipmentHistoryState.selectedTabIndex.collectAsState()
-    
-    // Count shipments by status
+
     val allCount = DummyData.shipments.size
     val completedCount = DummyData.shipments.count { it.status == ShipmentStatus.COMPLETED }
     val inProgressCount = DummyData.shipments.count { it.status == ShipmentStatus.IN_PROGRESS }
@@ -601,7 +504,7 @@ fun ShipmentHistoryHeaderTabs() {
         "Pending" to pendingCount
     )
     
-    // Custom tab row
+
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
         containerColor = Color.Transparent,

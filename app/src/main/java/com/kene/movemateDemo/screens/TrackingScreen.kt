@@ -66,12 +66,11 @@ fun TrackingScreen(
     searchQuery: String = "",
     isSearchFocused: Boolean = false
 ) {
-    // Filter shipments based on search query
     val filteredShipments = remember(searchQuery) {
         if (searchQuery.isEmpty()) {
-            DummyData.searchHistory
+            DummyData.shipments.take(5)
         } else {
-            DummyData.searchHistory.filter { shipment ->
+            DummyData.shipments.filter { shipment ->
                 shipment.name?.contains(searchQuery, ignoreCase = true) == true ||
                 shipment.trackingNumber.contains(searchQuery, ignoreCase = true) ||
                 shipment.from.contains(searchQuery, ignoreCase = true) ||
@@ -80,15 +79,12 @@ fun TrackingScreen(
         }
     }
     
-    // Content based on search focus state
     if (isSearchFocused) {
-        // Search results layout
         SearchResultsLayout(
             searchQuery = searchQuery,
             filteredShipments = filteredShipments
         )
     } else {
-        // Regular tracking screen content
         MainContent()
     }
 }
@@ -98,19 +94,17 @@ fun SearchResultsLayout(
     searchQuery: String,
     filteredShipments: List<Shipment>
 ) {
-    val slideInAnimation = remember {
-            Animatable(initialValue = 100f)
-        }
+    val slideInAnimation = remember { Animatable(initialValue = 100f) }
         
-        LaunchedEffect(Unit) {
-            slideInAnimation.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(
-                    durationMillis = 300,
-                    easing = FastOutSlowInEasing
-                )
+    LaunchedEffect(Unit) {
+        slideInAnimation.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(
+                durationMillis = 300,
+                easing = FastOutSlowInEasing
             )
-        }
+        )
+    }
 
     Box(Modifier.padding(horizontal = 16.dp, vertical = 16.dp).animateContentSize()) {
         
@@ -174,7 +168,6 @@ fun ShipmentSearchResultItem(shipment: Shipment) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Handle click */ }
             .padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -217,7 +210,7 @@ fun ShipmentSearchResultItem(shipment: Shipment) {
 
 @Composable
 fun MainContent() {
-    val animatedOffset = remember { Animatable(initialValue = 0f) }
+    val animatedOffset = remember { Animatable(initialValue = 100f) }
 
     LaunchedEffect(key1 = true) {
         animatedOffset.animateTo(
@@ -242,14 +235,13 @@ fun MainContent() {
             modifier = Modifier
                 .padding(bottom = 16.dp, top = 8.dp)
                 .padding(horizontal = 16.dp)
-                .offset(x = animatedOffset.value.dp)
         )
         
         // Shipment details card
 
         
         Box(
-            modifier = Modifier.offset(x = animatedOffset.value.dp)
+            modifier = Modifier.alpha(1f - (animatedOffset.value / 100f))
         ) {
             ShipmentDetailsCard(
                 shipment = DummyData.shipments[0],
@@ -266,7 +258,6 @@ fun MainContent() {
             modifier = Modifier
                 .padding(bottom = 16.dp)
                 .padding(horizontal = 16.dp)
-                .offset(x = animatedOffset.value.dp)
         )
         
         // Vehicle types
